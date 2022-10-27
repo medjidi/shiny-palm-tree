@@ -20,8 +20,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 public class Util {
-    private static volatile Connection connection;
-    private static volatile SessionFactory sessionFactory;
+    private static volatile SessionFactory instance;
 
     // реализуйте настройку соеденения с БД
     private static final String URL = "jdbc:mysql://localhost:3306/mydbtest?autoReconnect=true&useSSL=false";
@@ -30,12 +29,12 @@ public class Util {
     private static final String PASSWORD = "root";
 
     public static SessionFactory getSessionFactory() {
-        SessionFactory localSession = sessionFactory;
+        SessionFactory localSession = instance;
 
         if (localSession == null || localSession.isClosed()) {
 
             synchronized (Util.class) {
-                localSession = sessionFactory;
+                localSession = instance;
 
                 try {
                     Configuration configuration = new Configuration();
@@ -60,7 +59,7 @@ public class Util {
                     ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                             .applySettings(configuration.getProperties()).build();
 
-                    sessionFactory = localSession = configuration.buildSessionFactory(serviceRegistry);
+                    instance = localSession = configuration.buildSessionFactory(serviceRegistry);
 
                 } catch (Exception e) {
                     System.out.println("Hibernate Connection Error!!!");
@@ -71,35 +70,6 @@ public class Util {
         return localSession;
 
     }
-
-
-    public static Connection getConnection() {
-
-        Connection localConnection = connection;
-
-        try {
-            if (localConnection == null || localConnection.isClosed()) {
-
-                synchronized (Util.class) {
-                    localConnection = connection;
-
-                    try {
-                        Class.forName(Driver);
-                        connection = localConnection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-                        connection.setAutoCommit(false);
-
-                    } catch (ClassNotFoundException | SQLException e) {
-                        System.out.println("Connection Error!!!");
-                    }
-
-                }
-
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return localConnection;
-
-    }
+    
 
 }
