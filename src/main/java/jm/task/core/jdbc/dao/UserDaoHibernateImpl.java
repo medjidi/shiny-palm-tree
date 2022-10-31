@@ -9,7 +9,8 @@ import org.hibernate.Transaction;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
-    SessionFactory sessionFactory = Util.getSessionFactory();
+    Util util = Util.getInstance();
+    Transaction transaction;
 
     public UserDaoHibernateImpl() {
 
@@ -18,8 +19,8 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.getCurrentSession()) {
+        transaction = null;
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("CREATE TABLE IF NOT EXISTS users " +
                     "(id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
@@ -34,13 +35,13 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
-        Transaction transaction = null;
+        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS users")
                     .addEntity(User.class).executeUpdate();
-            session.getTransaction().commit();
+            transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been dropped");
@@ -49,12 +50,12 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        Transaction transaction = null;
+        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.save(new User(name, lastName, age));
-            session.getTransaction().commit();
+            transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been increased");
@@ -63,11 +64,11 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.getCurrentSession()) {
+        transaction = null;
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.delete(session.get(User.class, id));
-            session.getTransaction().commit();
+            transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been decreased");
@@ -76,13 +77,12 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        Transaction transaction = null;
+        transaction = null;
         List<User> users = null;
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             users = session.createNativeQuery("SELECT * FROM users", User.class)
                     .getResultList();
-            
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been read");
@@ -92,11 +92,11 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
-        Transaction transaction = null;
-        try (Session session = sessionFactory.getCurrentSession()) {
+        transaction = null;
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createQuery("delete User").executeUpdate();
-            session.getTransaction().commit();
+            transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been cleaned");
