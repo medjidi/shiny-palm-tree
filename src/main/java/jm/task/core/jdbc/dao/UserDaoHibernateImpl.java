@@ -9,7 +9,7 @@ import org.hibernate.Transaction;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
-    Util util = Util.getInstance();
+    SessionFactory sessionFactory = Util.getInstance().getSessionFactory();
     Transaction transaction;
 
     public UserDaoHibernateImpl() {
@@ -20,7 +20,8 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void createUsersTable() {
         transaction = null;
-        try (Session session = util.getSessionFactory().getCurrentSession()) {
+
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("CREATE TABLE IF NOT EXISTS users " +
                     "(id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
@@ -30,6 +31,7 @@ public class UserDaoHibernateImpl implements UserDao {
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been created");
+            e.printStackTrace();
         }
     }
 
@@ -37,7 +39,7 @@ public class UserDaoHibernateImpl implements UserDao {
     public void dropUsersTable() {
         transaction = null;
 
-        try (Session session = util.getSessionFactory().getCurrentSession()) {
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS users")
                     .addEntity(User.class).executeUpdate();
@@ -45,6 +47,7 @@ public class UserDaoHibernateImpl implements UserDao {
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been dropped");
+            e.printStackTrace();
         }
     }
 
@@ -52,26 +55,29 @@ public class UserDaoHibernateImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         transaction = null;
 
-        try (Session session = util.getSessionFactory().getCurrentSession()) {
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.save(new User(name, lastName, age));
             transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been increased");
+            e.printStackTrace();
         }
     }
 
     @Override
     public void removeUserById(long id) {
         transaction = null;
-        try (Session session = util.getSessionFactory().getCurrentSession()) {
+
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.delete(session.get(User.class, id));
             transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been decreased");
+            e.printStackTrace();
         }
     }
 
@@ -79,13 +85,15 @@ public class UserDaoHibernateImpl implements UserDao {
     public List<User> getAllUsers() {
         transaction = null;
         List<User> users = null;
-        try (Session session = util.getSessionFactory().getCurrentSession()) {
+
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             users = session.createNativeQuery("SELECT * FROM users", User.class)
                     .getResultList();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been read");
+            e.printStackTrace();
         }
         return users;
     }
@@ -93,13 +101,15 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void cleanUsersTable() {
         transaction = null;
-        try (Session session = util.getSessionFactory().getCurrentSession()) {
+
+        try (Session session = sessionFactory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createQuery("delete User").executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             transaction.rollback();
             System.out.println("Database has not been cleaned");
+            e.printStackTrace();
         }
     }
 }

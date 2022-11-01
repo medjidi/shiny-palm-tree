@@ -44,7 +44,6 @@ public class Util {
                     .applySettings(configuration.getProperties()).build();
 
             session = configuration.buildSessionFactory(serviceRegistry);
-
         } catch (HibernateException e) {
             System.out.println("Hibernate Connection Error!!!");
         }
