@@ -9,7 +9,9 @@ import org.hibernate.Transaction;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
-    SessionFactory sessionFactory = Util.getInstance().getSessionFactory();
+
+    Util util = Util.getInstance();
+
     Transaction transaction;
 
     public UserDaoHibernateImpl() {
@@ -19,17 +21,18 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("CREATE TABLE IF NOT EXISTS users " +
                     "(id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
                     "name VARCHAR(50) NOT NULL, lastName VARCHAR(50) NOT NULL, " +
                     "age TINYINT NOT NULL)").addEntity(User.class).executeUpdate();
             transaction.commit();
+            transaction = null;
         } catch (Exception e) {
             transaction.rollback();
+            transaction = null;
             System.out.println("Database has not been created");
             e.printStackTrace();
         }
@@ -37,15 +40,16 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
-        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS users")
                     .addEntity(User.class).executeUpdate();
             transaction.commit();
+            transaction = null;
         } catch (Exception e) {
             transaction.rollback();
+            transaction = null;
             System.out.println("Database has not been dropped");
             e.printStackTrace();
         }
@@ -53,14 +57,15 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.save(new User(name, lastName, age));
             transaction.commit();
+            transaction = null;
         } catch (Exception e) {
             transaction.rollback();
+            transaction = null;
             System.out.println("Database has not been increased");
             e.printStackTrace();
         }
@@ -68,14 +73,15 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.delete(session.get(User.class, id));
             transaction.commit();
+            transaction = null;
         } catch (Exception e) {
             transaction.rollback();
+            transaction = null;
             System.out.println("Database has not been decreased");
             e.printStackTrace();
         }
@@ -83,15 +89,17 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        transaction = null;
         List<User> users = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             users = session.createNativeQuery("SELECT * FROM users", User.class)
                     .getResultList();
+            transaction.commit();
+            transaction = null;
         } catch (Exception e) {
             transaction.rollback();
+            transaction = null;
             System.out.println("Database has not been read");
             e.printStackTrace();
         }
@@ -100,14 +108,15 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
-        transaction = null;
 
-        try (Session session = sessionFactory.getCurrentSession()) {
+        try (Session session = util.getSessionFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createQuery("delete User").executeUpdate();
             transaction.commit();
+            transaction = null;
         } catch (Exception e) {
             transaction.rollback();
+            transaction = null;
             System.out.println("Database has not been cleaned");
             e.printStackTrace();
         }
